@@ -1,0 +1,23 @@
+{
+  "name": "rafaga-mcp",
+  "version": "0.1.0",
+  "description": "Motor de vídeos verticales para promocionar funcionalidades web, con servidor MCP para Claude Code",
+  "type": "module",
+  "bin": { "rafaga": "src/cli.js", "rafaga-mcp": "src/server.js" },
+  "scripts": {
+    "mcp": "node src/server.js",
+    "render": "node src/cli.js render",
+    "preview": "node src/cli.js preview",
+    "editor": "node src/cli.js editor"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@fontsource/anton": "^5.0.0",
+    "@fontsource/archivo-black": "^5.0.0",
+    "@fontsource/bricolage-grotesque": "^5.0.0",
+    "@fontsource/unbounded": "^5.0.0",
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "puppeteer": "^23.0.0",
+    "zod": "^3.23.8"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "brand": {
+    "name": "Agendo",
+    "url": "agendo.app",
+    "font": "anton",
+    "preset": "electrico",
+    "bg": "#2B2BFF",
+    "fg": "#FFFFFF",
+    "accent": "#FFE14D",
+    "accent2": "#FF5EA8",
+    "app": "#2B2BFF"
+  },
+  "bpm": 128,
+  "scenes": [
+    {
+      "type": "hook",
+      "beats": 3,
+      "transition": "cut",
+      "text": "¿Tu agenda sigue en papel?"
+    },
+    {
+      "type": "feature",
+      "beats": 5,
+      "transition": "whip",
+      "title": "Reservas 24/7",
+      "sub": "Tus clientes eligen hora sin llamarte",
+      "mockup": "slots",
+      "ui": "Reservado: jueves 11:30"
+    },
+    {
+      "type": "feature",
+      "beats": 5,
+      "transition": "zoom",
+      "title": "Recordatorios solos",
+      "sub": "Un aviso el día antes, sin mover un dedo",
+      "mockup": "notify",
+      "ui": "Mañana a las 11:30 tienes cita con Laura en Estudio Norte|Laura ha confirmado su cita"
+    },
+    {
+      "type": "stat",
+      "beats": 3,
+      "transition": "flash",
+      "prefix": "-",
+      "value": 68,
+      "suffix": "%",
+      "label": "citas perdidas"
+    },
+    {
+      "type": "list",
+      "beats": 4,
+      "transition": "glitch",
+      "title": "Y además",
+      "items": [
+        "Pagos por adelantado",
+        "Ficha de cada cliente",
+        "Sin comisiones"
+      ]
+    },
+    {
+      "type": "cta",
+      "beats": 5,
+      "transition": "zoom",
+      "title": "Pruébalo gratis 14 días",
+      "button": "Crear mi agenda"
+    }
+  ]
+}

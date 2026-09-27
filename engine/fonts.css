@@ -1,0 +1,8 @@
+/* Fuentes locales (paquetes @fontsource instalados con npm). Sin red en el render. */
+@font-face{font-family:"Anton";font-weight:400;src:url("../node_modules/@fontsource/anton/files/anton-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Archivo Black";font-weight:400;src:url("../node_modules/@fontsource/archivo-black/files/archivo-black-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Unbounded";font-weight:800;src:url("../node_modules/@fontsource/unbounded/files/unbounded-latin-800-normal.woff2") format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-weight:500;src:url("../node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-500-normal.woff2") format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-weight:600;src:url("../node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-weight:700;src:url("../node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-weight:800;src:url("../node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2") format("woff2")}

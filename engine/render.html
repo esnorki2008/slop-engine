@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ráfaga · render headless</title>
+<link rel="stylesheet" href="fonts.css">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="cv" width="1080" height="1920"></canvas>
+<script src="rafaga-engine.js"></script>
+<script>
+// Puente que usa src/renderer.js vía Puppeteer.
+const cv = document.getElementById('cv');
+const eng = Rafaga.createEngine(cv);
+const thumb = document.createElement('canvas');
+async function loadFonts(spec) {
+  const f = Rafaga.FONTS[spec.brand.font] || Rafaga.FONTS.anton;
+  const faces = [`${f.w} 100px "${f.fam}"`, '500 100px "Bricolage Grotesque"', '600 100px "Bricolage Grotesque"', '700 100px "Bricolage Grotesque"', '800 100px "Bricolage Grotesque"'];
+  await Promise.all(faces.map(x => document.fonts.load(x, 'Áa¿ñ')));
+  return faces.filter(x => !document.fonts.check(x));
+}
+window.__rafaga = {
+  async load(spec) {
+    const tl = eng.load(spec);
+    const missing = await loadFonts(eng.spec);
+    return { total: tl.total, beat: tl.b, scenes: tl.T.map((x, i) => ({ ...x, type: eng.spec.scenes[i].type })), spec: eng.spec, warnings: Rafaga.lint(eng.spec), missingFonts: missing };
+  },
+  frame(t, type = 'image/jpeg', q = 0.95) { eng.renderFrame(t); return cv.toDataURL(type, q); },
+  thumb(t, w = 540) {
+    eng.renderFrame(t); thumb.width = w; thumb.height = Math.round(w * 16 / 9);
+    const g = thumb.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(cv, 0, 0, thumb.width, thumb.height);
+    return thumb.toDataURL('image/png');
+  },
+  audio() { return Rafaga.renderAudioWav(eng.spec); }
+};
+window.__ready = true;
+</script>
+</body>
+</html>
