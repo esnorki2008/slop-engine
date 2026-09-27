@@ -1,0 +1,58 @@
+{
+  "brand": {
+    "name": "BAZAR",
+    "url": "bazar.alamosrx.com",
+    "font": "anton",
+    "preset": "tinta",
+    "bg": "#171A17",
+    "fg": "#F8FAF3",
+    "accent": "#C5D89F",
+    "accent2": "#2D6A4F",
+    "app": "#2D6A4F"
+  },
+  "bpm": 128,
+  "scenes": [
+    {
+      "type": "hook",
+      "beats": 3,
+      "transition": "cut",
+      "text": "¿Sigues vendiendo con cuaderno?"
+    },
+    {
+      "type": "feature",
+      "beats": 5,
+      "transition": "whip",
+      "title": "Cobra en segundos",
+      "sub": "Punto de venta para tu mostrador",
+      "mockup": "typing",
+      "ui": "2 cuadernos + 1 lapicero|Cobrar|Venta registrada|Nueva venta"
+    },
+    {
+      "type": "feature",
+      "beats": 5,
+      "transition": "zoom",
+      "title": "Inventario al día",
+      "sub": "Sabes qué tienes y qué falta",
+      "mockup": "notify",
+      "ui": "Stock bajo: quedan 3 cuadernos rayados|Venta registrada en caja 1"
+    },
+    {
+      "type": "list",
+      "beats": 4,
+      "transition": "glitch",
+      "title": "Hecho para",
+      "items": [
+        "Tiendas y almacenes",
+        "Librerías",
+        "Emprendimientos"
+      ]
+    },
+    {
+      "type": "cta",
+      "beats": 6,
+      "transition": "flash",
+      "title": "Pruébalo sin costos ocultos en plan Emprendedor",
+      "button": "Visítanos ya"
+    }
+  ]
+}
