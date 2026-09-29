@@ -3,11 +3,13 @@
 Motor de vídeos verticales (1080×1920) para promocionar funcionalidades web en TikTok, Reels y Shorts.
 
 ## Flujo para crear un vídeo
-1. `rafaga_schema` para ver el formato (o lee `docs/SPEC.md`).
-2. Escribe la spec en `videos/<nombre>.json`.
-3. `rafaga_validate` y corrige los avisos.
-4. `rafaga_preview` y **mira las imágenes**: textos cortados, solapes, legibilidad.
-5. `rafaga_render` a `out/<nombre>.mp4`.
+1. Pide al usuario la URL completa del sitio y pregúntale si quiere mostrar la versión web desktop o web móvil. Si ya dio uno de esos datos, pregunta solo por el que falte.
+2. `rafaga_schema` para ver el formato (o lee `docs/SPEC.md`).
+3. `rafaga_capture_site` con la URL y la versión elegida. Incluye al menos una escena `site` con la captura devuelta; los colores de la página pueden inspirar la paleta, pero la captura debe verse en el vídeo.
+4. Escribe la spec en `videos/<nombre>.json`.
+5. `rafaga_validate` y corrige los avisos.
+6. `rafaga_preview` y **mira las imágenes**: sitio visible, textos cortados, solapes, legibilidad y entrada bouncy.
+7. `rafaga_render` a `out/<nombre>.mp4`.
 
 ## Reglas de contenido
 - Textos cortísimos: el lector tiene menos de 2 s por escena.

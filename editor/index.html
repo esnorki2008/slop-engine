@@ -14,7 +14,7 @@
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
   --bg:#ECEEF3;--panel:#FFFFFF;--ink:#15171C;--muted:#5D6371;--line:#D8DCE4;--field:#F4F5F8;
   --accent:#2F5BFF;--rec:#FF3B30;--stage:#DFE2E9;
-  --t-hook:#FF3B30;--t-feature:#2F5BFF;--t-stat:#E89B00;--t-list:#00A37A;--t-compare:#8E5BFF;--t-cta:#15171C;
+  --t-hook:#FF3B30;--t-feature:#2F5BFF;--t-site:#00AFC0;--t-stat:#E89B00;--t-list:#00A37A;--t-compare:#8E5BFF;--t-cta:#15171C;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#121419;--panel:#1B1E25;--ink:#ECEEF2;--muted:#9BA2AF;--line:#2D313B;--field:#242832;
@@ -211,6 +211,7 @@ const UI_HINT={slots:'Mensaje de confirmación tras el toque',notify:'Una o dos 
 const FIELDS={
   hook:[{k:'text',l:'Frase gancho',hint:'Cada palabra entra con un golpe; la última queda resaltada.'}],
   feature:[{k:'title',l:'Título'},{k:'sub',l:'Subtítulo'},{k:'mockup',l:'Pantalla del móvil',opts:MOCKS},{k:'ui',l:'Texto dentro de la pantalla',hintFn:s=>UI_HINT[s.mockup||'slots']}],
+  site:[{k:'title',l:'Título'},{k:'sub',l:'Subtítulo'},{k:'view',l:'Versión',opts:{desktop:'Web desktop',mobile:'Web móvil'}},{k:'screenshot',l:'Captura PNG',hint:'Ruta devuelta por rafaga_capture_site (por ejemplo ../assets/sites/...)'}],
   stat:[{k:'prefix',l:'Prefijo',third:1},{k:'value',l:'Número',third:1},{k:'suffix',l:'Sufijo',third:1},{k:'label',l:'Qué mide'}],
   list:[{k:'title',l:'Título'},{k:'items',l:'Puntos, uno por línea',area:1}],
   compare:[{k:'before',l:'Antes'},{k:'after',l:'Ahora'}],
@@ -328,13 +329,13 @@ function normalize(o){
   if(!o||typeof o!=='object')throw new Error('se esperaba un objeto');
   const brand={...EXAMPLE.brand,...(o.brand||{})};if(!FONTS[brand.font])brand.font='anton';
   COLOR_KEYS.forEach(([k])=>{if(!/^#[0-9a-f]{6}$/i.test(brand[k]||''))brand[k]=EXAMPLE.brand[k]});
-  const scenes=(Array.isArray(o.scenes)?o.scenes:[]).filter(s=>s&&TYPES[s.type]).map(s=>{const n={...NEW[s.type],...s};n.beats=cl(parseInt(n.beats)||3,1,12);if(!TRANS[n.transition])n.transition='cut';if(n.type==='feature'&&!MOCKS[n.mockup])n.mockup='slots';if(n.type==='list'&&!Array.isArray(n.items))n.items=String(n.items||'').split('\n');return n});
+  const scenes=(Array.isArray(o.scenes)?o.scenes:[]).filter(s=>s&&TYPES[s.type]).map(s=>{const n={...NEW[s.type],...s};n.beats=cl(parseInt(n.beats)||3,1,12);if(!TRANS[n.transition])n.transition='cut';if(n.type==='feature'&&!MOCKS[n.mockup])n.mockup='slots';if(n.type==='site'&&!['desktop','mobile'].includes(n.view))n.view='desktop';if(n.type==='list'&&!Array.isArray(n.items))n.items=String(n.items||'').split('\n');return n});
   if(!scenes.length)throw new Error('no hay escenas válidas');
   return{brand,bpm:cl(parseInt(o.bpm)||128,90,170),scenes};
 }
 
 /* ============ Cambios globales ============ */
-function changed(){timeline();drawStrip();$('durBadge').textContent=`${fmt(TL.total,1)} s · ${spec.scenes.length} escenas`;curT=Math.min(curT,Math.max(0,TL.total-1e-3));if(!playing)renderFrame(curT);lastActive=-1;updateHead();syncJSON()}
+function changed(){timeline();drawStrip();$('durBadge').textContent=`${fmt(TL.total,1)} s · ${spec.scenes.length} escenas`;curT=Math.min(curT,Math.max(0,TL.total-1e-3));if(!playing)renderFrame(curT);lastActive=-1;updateHead();syncJSON();if(spec.scenes.some(s=>s.type==='site'&&s.screenshot))eng.loadAssets().then(()=>{if(!playing)renderFrame(curT)}).catch(e=>{$('jsonMsg').className='msg err';$('jsonMsg').textContent=e.message})}
 function renderAll(){pause();renderBrand();renderScenes();loadFonts().then(changed);changed()}
 
 /* ============ Pestañas y opciones ============ */
@@ -349,7 +350,7 @@ const MIMES=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','v
 async function exportVideo(){
   if(rec||!spec.scenes.length)return;
   if(typeof MediaRecorder==='undefined'||!cv.captureStream){$('result').classList.add('on');$('resTxt').textContent='Este navegador no puede grabar el lienzo. Prueba con Chrome, Edge o Safari recientes.';$('saveBtn').hidden=true;return}
-  pause();await loadFonts();
+  pause();try{await Promise.all([loadFonts(),eng.loadAssets()])}catch(e){$('jsonMsg').className='msg err';$('jsonMsg').textContent=e.message;return}
   const stream=cv.captureStream(opts.fps);
   if(opts.audio){ensureActx();recDest=actx.createMediaStreamDestination();const tr=recDest.stream.getAudioTracks()[0];if(tr)stream.addTrack(tr)}
   const mime=MIMES.find(m=>MediaRecorder.isTypeSupported(m))||'';

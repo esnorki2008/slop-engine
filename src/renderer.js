@@ -30,14 +30,19 @@ export async function closeBrowser() {
 async function openPage(spec) {
   const browser = await getBrowser();
   const page = await browser.newPage();
-  await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
-  const errors = [];
-  page.on('pageerror', e => errors.push(String(e)));
-  await page.goto(RENDER_PAGE, { waitUntil: 'load' });
-  await page.waitForFunction('window.__ready === true');
-  const info = await page.evaluate(s => window.__rafaga.load(s), spec);
-  if (errors.length) throw new Error('Error en el motor: ' + errors.join(' | '));
-  return { page, info };
+  try {
+    await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
+    const errors = [];
+    page.on('pageerror', e => errors.push(String(e)));
+    await page.goto(RENDER_PAGE, { waitUntil: 'load' });
+    await page.waitForFunction('window.__ready === true');
+    const info = await page.evaluate(s => window.__rafaga.load(s), spec);
+    if (errors.length) throw new Error('Error en el motor: ' + errors.join(' | '));
+    return { page, info };
+  } catch (e) {
+    await page.close();
+    throw e;
+  }
 }
 
 /** Carga una spec y devuelve la versión normalizada, duración y avisos. */

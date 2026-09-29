@@ -8,6 +8,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inspect, preview, renderVideo, closeBrowser } from './renderer.js';
+import { captureSite } from './site-capture.js';
 
 const [cmd, a, b, ...rest] = process.argv.slice(2);
 const flag = (n, d) => { const i = rest.indexOf('--' + n); return i < 0 ? d : rest[i + 1]; };
@@ -34,10 +35,15 @@ try {
     const info = await inspect(await load(a));
     console.log(`${info.total.toFixed(2)} s · ${info.scenes.length} escenas`);
     info.warnings.forEach(w => console.log('  aviso: ' + w));
+  } else if (cmd === 'capture') {
+    if (!a || !['desktop', 'mobile'].includes(b)) throw new Error('Uso: capture <URL> <desktop|mobile>');
+    const shot = await captureSite(a, b);
+    console.log(`Captura guardada: ${shot.path}`);
+    console.log(JSON.stringify({ type: 'site', title: shot.title || 'Así se ve', sub: '', view: b, screenshot: shot.screenshot, beats: 5, transition: 'zoom' }, null, 2));
   } else if (cmd === 'editor') {
     console.log('Abre en el navegador: ' + pathToFileURL(join(ROOT, 'editor', 'index.html')).href);
   } else {
-    console.log('Comandos: render | preview | validate | editor');
+    console.log('Comandos: capture | render | preview | validate | editor');
   }
 } catch (e) { console.error('✖ ' + e.message); process.exitCode = 1; }
 finally { await closeBrowser(); }

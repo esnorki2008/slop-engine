@@ -23,6 +23,7 @@ async function loadFonts(spec) {
 window.__rafaga = {
   async load(spec) {
     const tl = eng.load(spec);
+    await eng.loadAssets();
     const missing = await loadFonts(eng.spec);
     return { total: tl.total, beat: tl.b, scenes: tl.T.map((x, i) => ({ ...x, type: eng.spec.scenes[i].type })), spec: eng.spec, warnings: Rafaga.lint(eng.spec), missingFonts: missing };
   },

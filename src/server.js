@@ -12,6 +12,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inspect, preview, renderVideo, closeBrowser } from './renderer.js';
+import { captureSite } from './site-capture.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const server = new McpServer({ name: 'rafaga', version: '0.1.0' });
@@ -42,6 +43,24 @@ server.registerTool('rafaga_schema', {
   const doc = await readFile(join(ROOT, 'docs', 'SPEC.md'), 'utf8');
   const example = await readFile(join(ROOT, 'examples', 'agendo.json'), 'utf8');
   return text(doc + '\n\n## Ejemplo completo\n\n```json\n' + example + '\n```');
+});
+
+server.registerTool('rafaga_capture_site', {
+  title: 'Capturar sitio real para el vídeo',
+  description: 'Abre una URL real en Chrome y guarda una captura lista para una escena "site". Antes de llamarla, pregunta al usuario por la URL y si quiere web desktop o web móvil; no elijas por él. Usa la captura devuelta en la spec, no solo sus colores.',
+  inputSchema: {
+    url: z.string().url().describe('URL completa del sitio, con http:// o https://.'),
+    view: z.enum(['desktop', 'mobile']).describe('Versión elegida por el usuario: desktop o mobile.')
+  }
+}, async ({ url, view }) => {
+  try {
+    const shot = await captureSite(url, view);
+    const scene = { type: 'site', title: shot.title || 'Así se ve', sub: '', view, screenshot: shot.screenshot, beats: 5, transition: 'zoom' };
+    return { content: [
+      { type: 'text', text: `Captura ${view} de ${shot.url}\nArchivo: ${shot.path}\nUsa esta escena en la spec y ajusta el título según el vídeo:\n${JSON.stringify(scene, null, 2)}` },
+      { type: 'image', data: (await readFile(shot.path)).toString('base64'), mimeType: 'image/png' }
+    ] };
+  } catch (e) { return fail(e); }
 });
 
 server.registerTool('rafaga_validate', {

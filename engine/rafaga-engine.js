@@ -54,12 +54,13 @@
     tinta: { label: 'Tinta', bg: '#15161C', fg: '#F4F4F6', accent: '#B8A6FF', accent2: '#FF7A59', app: '#6B4EFF' }
   };
   const COLOR_KEYS = ['bg', 'fg', 'accent', 'accent2', 'app'];
-  const TYPES = { hook: 'Gancho', feature: 'Funcionalidad', stat: 'Cifra', list: 'Lista', compare: 'Antes y ahora', cta: 'Llamada a la acción' };
+  const TYPES = { hook: 'Gancho', feature: 'Funcionalidad', site: 'Sitio real', stat: 'Cifra', list: 'Lista', compare: 'Antes y ahora', cta: 'Llamada a la acción' };
   const MOCKS = { slots: 'Calendario de reservas', notify: 'Notificaciones', chart: 'Gráfica de resultados', typing: 'Formulario que se rellena' };
   const TRANS = { cut: 'Corte seco', whip: 'Barrido', push: 'Empuje', zoom: 'Zoom', flash: 'Destello', glitch: 'Glitch' };
   const NEW = {
     hook: { text: '¿Pierdes clientes cada semana?', beats: 3, transition: 'flash' },
     feature: { title: 'Nueva función', sub: 'Qué resuelve, en una frase', mockup: 'slots', ui: 'Hecho', beats: 4, transition: 'whip' },
+    site: { title: 'Así se ve', sub: '', view: 'desktop', screenshot: '', beats: 5, transition: 'zoom' },
     stat: { prefix: '+', value: 3, suffix: 'x', label: 'más reservas', beats: 3, transition: 'zoom' },
     list: { title: 'Incluye', items: ['Primera ventaja', 'Segunda ventaja', 'Tercera ventaja'], beats: 4, transition: 'push' },
     compare: { before: 'Horas con hojas de cálculo', after: 'Todo en un clic', beats: 4, transition: 'glitch' },
@@ -91,6 +92,7 @@
       n.beats = cl(parseInt(n.beats) || 3, 1, 12);
       if (!TRANS[n.transition]) n.transition = 'cut';
       if (n.type === 'feature' && !MOCKS[n.mockup]) n.mockup = 'slots';
+      if (n.type === 'site' && !['desktop', 'mobile'].includes(n.view)) n.view = 'desktop';
       if (n.type === 'list' && !Array.isArray(n.items)) n.items = String(n.items || '').split('\n');
       return n;
     });
@@ -104,12 +106,13 @@
   }
   function lint(spec) {
     const w = [], words = s => String(s || '').trim().split(/\s+/).filter(Boolean).length, tl = timeline(spec);
-    const LIM = { hook: { text: 7 }, feature: { title: 4, sub: 10 }, stat: { label: 4 }, list: { title: 3 }, compare: { before: 7, after: 7 }, cta: { title: 7, button: 3 } };
+    const LIM = { hook: { text: 7 }, feature: { title: 4, sub: 10 }, site: { title: 5, sub: 10 }, stat: { label: 4 }, list: { title: 3 }, compare: { before: 7, after: 7 }, cta: { title: 7, button: 3 } };
     spec.scenes.forEach((s, i) => {
       Object.entries(LIM[s.type] || {}).forEach(([k, max]) => { const n = words(s[k]); if (n > max) w.push(`Escena ${i + 1} (${s.type}): "${k}" tiene ${n} palabras; recomendado ≤ ${max}.`); });
       if (s.type === 'list') { const it = s.items.filter(Boolean); if (it.length > 4) w.push(`Escena ${i + 1}: más de 4 puntos se leen mal en ${tl.T[i].dur.toFixed(1)} s.`); }
       if (tl.T[i].dur < 1) w.push(`Escena ${i + 1}: dura ${tl.T[i].dur.toFixed(2)} s, demasiado rápido para leer.`);
       if (s.type === 'stat' && !isFinite(parseFloat(String(s.value).replace(',', '.')))) w.push(`Escena ${i + 1}: "value" no es un número.`);
+      if (s.type === 'site' && !s.screenshot) w.push(`Escena ${i + 1}: falta "screenshot". Usa rafaga_capture_site para capturar la web.`);
     });
     if (spec.scenes[0] && spec.scenes[0].type !== 'hook') w.push('El vídeo no empieza con un gancho: en TikTok los primeros 1-2 s deciden si se ve.');
     if (spec.scenes.length && spec.scenes[spec.scenes.length - 1].type !== 'cta') w.push('El vídeo no termina con una llamada a la acción.');
@@ -154,6 +157,11 @@
     content(sx, sy, sw, sh);
     c.fillStyle = '#0D0E12'; rr(c, x + w / 2 - 78, sy + 20, 156, 44, 22); c.fill();
     c.restore();
+  }
+  function imageCover(c, image, x, y, w, h) {
+    const scale = Math.max(w / image.naturalWidth, h / image.naturalHeight);
+    const sw = w / scale, sh = h / scale;
+    c.drawImage(image, (image.naturalWidth - sw) / 2, 0, sw, sh, x, y, w, h);
   }
   function appHeader(c, sx, sy, sw, B, title) {
     c.textAlign = 'left'; c.textBaseline = 'alphabetic';
@@ -269,7 +277,7 @@
       words.forEach((w, i) => {
         const z = sizes[i], cy = y + z * lh / 2; y += z * lh;
         const ti = i * step, k = P(lt, ti, .22); if (k <= 0) return;
-        const e = E.outExpo(k), sc = 1 + 1.6 * (1 - e), last = i === n - 1 && n > 1;
+        const e = E.outBack(k), sc = 1 + 1.6 * (1 - e), last = i === n - 1 && n > 1;
         c.save(); c.translate(W / 2, cy); if (last) c.rotate(-.04); c.scale(sc, sc); c.globalAlpha = cl(k * 4); c.font = disp(B, z);
         if (last) { const tw = c.measureText(w).width + 70, g = E.outCubic(P(lt, ti + .08, .25)); c.fillStyle = B.accent; rr(c, -tw / 2, -z * .54, tw * g, z * 1.08, 20); c.fill(); c.fillStyle = B.ink; } else c.fillStyle = B.fg;
         c.fillText(w, 0, z * .04); c.restore();
@@ -277,14 +285,49 @@
       c.restore();
     },
     feature(c, s, lt, d, B) {
-      const title = up(B, s.title), tz = fit(c, title, z => disp(B, z), 150, 940), k1 = E.outExpo(P(lt, 0, .35));
+      const title = up(B, s.title), tz = fit(c, title, z => disp(B, z), 150, 940), k1 = E.outBack(P(lt, 0, .4));
       c.textAlign = 'center'; c.textBaseline = 'alphabetic';
       c.save(); c.globalAlpha = cl(k1 * 2); c.fillStyle = B.fg; c.font = disp(B, tz); c.fillText(title, W / 2, 240 + tz * .8 + (1 - k1) * 120); c.restore();
-      c.font = body(50, 600); const lines = wrap(c, s.sub, 880).slice(0, 2), k2 = E.outExpo(P(lt, .12, .35));
+      c.font = body(50, 600); const lines = wrap(c, s.sub, 880).slice(0, 2), k2 = E.outBack(P(lt, .12, .4));
       c.save(); c.globalAlpha = cl(k2 * 1.5) * .88; c.fillStyle = B.fg; lines.forEach((l, j) => c.fillText(l, W / 2, 240 + tz + 70 + j * 62 + (1 - k2) * 60)); c.restore();
       const pw = 600, ph = 1000, px = (W - pw) / 2, py = 580 + (lines.length > 1 ? 30 : 0), e = E.outBack(P(lt, .05, .55));
-      c.save(); c.translate(W / 2, py + ph / 2 + (1 - e) * 1000); c.rotate((1 - e) * .18); c.translate(-W / 2, -(py + ph / 2));
+      c.save(); c.translate(W / 2, py + ph / 2 + (1 - e) * 1000); c.rotate((1 - e) * .18); c.scale(.82 + .18 * e, .82 + .18 * e); c.translate(-W / 2, -(py + ph / 2));
       phone(c, px, py, pw, ph, (sx, sy, sw, sh) => (MOCK[s.mockup] || MOCK.slots)(c, sx, sy, sw, sh, s, lt - .25, d, B));
+      c.restore();
+    },
+    site(c, s, lt, d, B, t, images) {
+      const image = images.get(s.screenshot);
+      const title = up(B, s.title), z = fit(c, title, q => disp(B, q), 150, 940);
+      const kt = E.outBack(P(lt, 0, .43));
+      c.save(); c.globalAlpha = cl(kt * 2); c.translate(W / 2, 285 + (1 - kt) * 100); c.scale(.82 + .18 * kt, .82 + .18 * kt);
+      c.fillStyle = B.fg; c.font = disp(B, z); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(title, 0, 0); c.restore();
+      if (s.sub) {
+        const ks = E.outBack(P(lt, .14, .44));
+        c.save(); c.globalAlpha = cl(ks * 2); c.fillStyle = B.fg; c.font = body(48, 600); c.textAlign = 'center'; c.textBaseline = 'middle';
+        wrap(c, s.sub, 850).slice(0, 2).forEach((line, i) => c.fillText(line, W / 2, 400 + i * 56 + (1 - ks) * 75)); c.restore();
+      }
+      const mobile = s.view === 'mobile';
+      const x = mobile ? 290 : 80, y = mobile ? 470 : 650, w = mobile ? 500 : 860, h = mobile ? 1040 : 605;
+      const k = E.spring(P(lt, .12, .72));
+      if (k <= 0) return;
+      c.save(); c.globalAlpha = cl(k * 2); c.translate(x + w / 2, y + h / 2 + (1 - k) * 500); c.rotate((1 - k) * -.07);
+      c.scale(.68 + .32 * k, .68 + .32 * k); c.translate(-w / 2, -h / 2);
+      c.shadowColor = 'rgba(0,0,0,.38)'; c.shadowBlur = 80; c.shadowOffsetY = 35;
+      c.fillStyle = mobile ? '#0D0E12' : '#F5F6FA'; rr(c, 0, 0, w, h, mobile ? 72 : 36); c.fill();
+      c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
+      const inset = mobile ? 16 : 14, chrome = mobile ? 0 : 68;
+      c.save(); rr(c, inset, inset + chrome, w - inset * 2, h - inset * 2 - chrome, mobile ? 56 : 12); c.clip();
+      c.fillStyle = '#FFFFFF'; c.fillRect(inset, inset + chrome, w - inset * 2, h - inset * 2 - chrome);
+      if (image && image.complete && image.naturalWidth) imageCover(c, image, inset, inset + chrome, w - inset * 2, h - inset * 2 - chrome);
+      c.restore();
+      if (mobile) { c.fillStyle = '#0D0E12'; rr(c, w / 2 - 78, 34, 156, 36, 18); c.fill(); }
+      else {
+        const kd = E.outBack(P(lt, .33, .35));
+        c.fillStyle = '#E4E7ED'; rr(c, 154, 24, w - 190, 34, 17); c.fill();
+        ['#FF6058', '#FFBD2E', '#28C840'].forEach((color, i) => {
+          c.save(); c.translate(40 + i * 35, 41); c.scale(kd, kd); c.fillStyle = color; c.beginPath(); c.arc(0, 0, 10, 0, 7); c.fill(); c.restore();
+        });
+      }
       c.restore();
     },
     stat(c, s, lt, d, B) {
@@ -382,7 +425,20 @@
     const ctx = canvas.getContext('2d');
     const cA = mkCanvas(), cB = mkCanvas(), xA = cA.getContext('2d'), xB = cB.getContext('2d');
     let spec = normalize(EXAMPLE), TL = timeline(spec), B = brandCtx(spec.brand);
+    const images = new Map();
     function load(s) { spec = normalize(s); TL = timeline(spec); B = brandCtx(spec.brand); return TL; }
+    async function loadAssets() {
+      if (spec.scenes.some(s => s.type === 'site' && !s.screenshot)) throw new Error('Una escena "site" no tiene captura. Usa rafaga_capture_site o indica un PNG en "screenshot".');
+      const sources = [...new Set(spec.scenes.filter(s => s.type === 'site' && s.screenshot).map(s => s.screenshot))];
+      await Promise.all(sources.map(async source => {
+        if (images.has(source)) return;
+        const image = new Image();
+        image.src = source;
+        try { await image.decode(); }
+        catch { throw new Error(`No se pudo cargar la captura "${source}". Vuelve a capturar el sitio.`); }
+        images.set(source, image);
+      }));
+    }
     function locate(t) { for (let i = TL.T.length - 1; i >= 0; i--) if (t >= TL.T[i].start) return [i, t - TL.T[i].start]; return [0, t]; }
     function drawScene(c, i, lt, t) {
       const s = spec.scenes[i], d = TL.T[i].dur;
@@ -390,7 +446,7 @@
       background(c, B, t, i);
       const punch = 1 + .07 * (1 - E.outCubic(P(lt, 0, .3))), bp = (t % TL.b) / TL.b, bump = 1 + .012 * (1 - E.outCubic(cl(bp * 4))), sc = punch * bump;
       c.translate(W / 2, H / 2); c.scale(sc, sc); c.translate(-W / 2, -H / 2);
-      (SCENES[s.type] || SCENES.hook)(c, s, lt, d, B, t);
+      (SCENES[s.type] || SCENES.hook)(c, s, lt, d, B, t, images);
       c.restore();
       grain(c, t);
     }
@@ -400,7 +456,7 @@
       if (i > 0 && lt < tr && s.transition && s.transition !== 'cut') { drawScene(xA, i - 1, TL.T[i - 1].dur + lt, t); drawScene(xB, i, lt, t); composite(ctx, cA, cB, lt / tr, s.transition, t, B.accent); }
       else drawScene(ctx, i, lt, t);
     }
-    return { load, renderFrame, locate, canvas, get spec() { return spec; }, get timeline() { return TL; } };
+    return { load, loadAssets, renderFrame, locate, canvas, get spec() { return spec; }, get timeline() { return TL; } };
   }
 
   /* ============ Audio sintetizado (mismo código en tiempo real y offline) ============ */

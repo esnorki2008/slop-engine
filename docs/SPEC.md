@@ -14,7 +14,7 @@ Un vídeo es un objeto JSON con tres claves: `brand`, `bpm` y `scenes`. El lienz
 
 Cada escena dura `beats` tiempos. Un tiempo dura `60 / bpm` segundos (a 128 bpm, 0,47 s). Los cortes caen en el pulso de la pista generada. Duración total recomendada: 8–15 s. Una escena por debajo de 1 s no se llega a leer.
 
-Guía de `beats`: hook 3 · feature 4–5 · stat 3 · list 4 · compare 4 · cta 4–5.
+Guía de `beats`: hook 3 · feature 4–5 · site 4–5 · stat 3 · list 4 · compare 4 · cta 4–5.
 
 ## brand
 
@@ -45,6 +45,15 @@ Título, subtítulo y un móvil con una pantalla animada.
   - `chart`: barras que crecen con una cifra. `ui` = `cifra|etiqueta`.
   - `typing`: campo que se escribe solo y un botón. `ui` = `texto escrito|botón|mensaje de éxito|título opcional`.
 
+### site
+
+Muestra una captura real del sitio dentro de un navegador desktop o un móvil. El título, el marco y sus controles aparecen con rebote. Para crearla, pide al usuario la URL y si prefiere web desktop o web móvil; llama a `rafaga_capture_site` y usa el campo `screenshot` que devuelve.
+
+- `title`: 2–5 palabras · `sub`: descripción breve opcional.
+- `view`: `desktop` o `mobile`, según la elección del usuario.
+- `screenshot`: ruta PNG devuelta por `rafaga_capture_site`, por ejemplo `../assets/sites/ejemplo.com-desktop-abc12345.png`. Se carga antes de renderizar; si falta o no existe, el render falla con un error.
+- La captura muestra el primer viewport de la web. Si el sitio requiere inicio de sesión o bloquea navegadores automáticos, proporciona una captura PNG accesible para el motor.
+
 ### stat
 Contador con anillo de progreso.
 - `prefix`, `value` (número; admite decimales con `.` o `,`), `suffix`, `label` (2–4 palabras).
@@ -67,4 +76,4 @@ Sobre 1080×1920: arriba 0–150 px, abajo 1536–1920 px (descripción y músic
 
 ## Estructura que funciona
 
-`hook` → 2–3 `feature` → como mucho uno de `stat` / `list` / `compare` → `cta`. Entre 5 y 7 escenas.
+`hook` → `site` + 1–2 `feature` → como mucho uno de `stat` / `list` / `compare` → `cta`. Entre 5 y 7 escenas.
